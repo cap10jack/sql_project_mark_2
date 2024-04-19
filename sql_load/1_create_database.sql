@@ -324,7 +324,7 @@ LIMIT 10
 
 
 
--- count skills per company 
+-- Number of skills per company 
 
 select company_dim.name "Company Name", count (skills_job_dim.skill_id) as kun
 from skills_job_dim 
@@ -342,18 +342,19 @@ limit 1000
 
 
    with skillcount as  
-(select job_postings_fact.job_id,job_postings_fact.job_title_short, count (skills_job_dim.skill_id) as kun, salary_year_avg
+(select job_postings_fact.job_id,job_postings_fact.job_title_short,
+        count (skills_job_dim.skill_id) as number_of_skills, salary_year_avg
 from skills_job_dim 
 inner join job_postings_fact on
            skills_job_dim.job_id = job_postings_fact.job_id
            inner join company_dim
 on job_postings_fact.company_id = company_dim.company_id
 
-            where salary_year_avg > 200000
+            where salary_year_avg IS NOT NULL
 
 group by job_postings_fact.job_id
 
-order by kun  
+order by number_of_skills, salary_year_avg DESC
 
    )
 
@@ -361,11 +362,19 @@ select * from skillcount
 
 limit 1000
 
+
 -- specific details based on job_id
 
-select skills_job_dim.skill_id, skills, job_postings_fact.* from skills_job_dim inner join skills_dim 
-on skills_job_dim.skill_id=skills_dim.skill_id
-inner join job_postings_fact on
-           skills_job_dim.job_id = job_postings_fact.job_id
-where skills_job_dim.job_id = 191226
+SELECT skills_job_dim.skill_id, skills, company_dim.name as comapany_name,
+job_postings_fact.* 
+
+FROM skills_job_dim 
+INNER JOIN skills_dim 
+ON skills_job_dim.skill_id=skills_dim.skill_id
+INNER JOIN job_postings_fact 
+ON skills_job_dim.job_id = job_postings_fact.job_id
+INNER JOIN company_dim 
+ON job_postings_fact.company_id = company_dim.company_id
+
+WHERE skills_job_dim.job_id = 551617
 
